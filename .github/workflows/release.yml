@@ -22,7 +22,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    
+
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
           version: 8
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Build
         run: pnpm run build
@@ -57,7 +57,7 @@ jobs:
           # 确保在 main 分支
           git checkout main
           git pull origin main
-          
+
           # 检查 release 分支是否存在
           if git ls-remote --heads origin release | grep -q release; then
             echo "Release branch exists, checking out..."
@@ -87,13 +87,13 @@ jobs:
         run: |
           VERSION_TYPE="${{ steps.version_type.outputs.type }}"
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          
+
           # 使用 node 直接更新版本号（更可靠）
           NEW_VERSION=$(node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             const [major, minor, patch] = pkg.version.split('.').map(Number);
-            
+
             let newVersion;
             if ('$VERSION_TYPE' === 'major') {
               newVersion = \`\${major + 1}.0.0\`;
@@ -102,12 +102,12 @@ jobs:
             } else {
               newVersion = \`\${major}.\${minor}.\${patch + 1}\`;
             }
-            
+
             pkg.version = newVersion;
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
             console.log(newVersion);
           ")
-          
+
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Bumped version from $CURRENT_VERSION to $NEW_VERSION"
 
@@ -129,9 +129,9 @@ jobs:
           name: Release v${{ steps.version.outputs.version }}
           body: |
             ## Changes
-            
+
             Automated release v${{ steps.version.outputs.version }}
-            
+
             ### Built Files
             - `dist/index.cjs` - Bundled action with all dependencies
           draft: false
