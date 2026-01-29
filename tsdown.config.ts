@@ -5,4 +5,5 @@ export default defineConfig({
   platform: 'node',
   format: 'cjs',
   outDir: 'dist',
+  noExternal: ['@actions/core'],
 });
