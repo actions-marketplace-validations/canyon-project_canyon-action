@@ -113,8 +113,15 @@ jobs:
 
       - name: Commit dist and version changes
         run: |
-          git add dist/ package.json
-          git commit -m "chore: release v${{ steps.version.outputs.version }} [skip ci]" || exit 0
+          # 强制添加 dist 文件（即使它在 .gitignore 中）
+          git add -f dist/
+          git add package.json
+          # 检查是否有变更需要提交
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: release v${{ steps.version.outputs.version }} [skip ci]"
+          fi
 
       - name: Create and push tag
         run: |
